@@ -1,5 +1,4 @@
 ## AFC Calibration
-Calibration Scripts for the Figaro Methane Sensor
 This repository contains scripts and data for calibrating the Figaro Methane Sensor using reference measurements. 
 
 ## Contents
