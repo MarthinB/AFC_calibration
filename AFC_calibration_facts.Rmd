@@ -1,0 +1,468 @@
+---
+title: "Figaro Methane Sensor Calibration"
+author: "Tuba Bucak Onay"
+date: "2025-02-11"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## CH<sub>4</sub> sensor calibration Facts
+
+
+TGS sensor operates on the principle of chemical adsorption and desorption of gases on sensor’s surface. Some gases- for example water vapor- can interfere  voltage measurements by causing a decrease in resistance of the sensor as the water vapor is adsorbed on the sensor surface which requires the calibration necessary. 
+
+Based on the sensor's circuit diagram, the sensing area is connected in series with the reference resistor (RL). The circuit voltage (RL) is 5V, which is distributed across both the sensing area and the reference resistor. However, the voltage across the reference resistor changes with the concentration of gas. When the target gas is detected, the resistance of the sensing area drops, causing the measured voltage (VL) to rise.  
+
+
+$$R_s = \left(\frac{V_c}{V_L} - 1\right)$$
+
+
+Since the surface characteristics and resistance of individual sensors vary, each sensor requires calibration. This calibration must also consider temperature and humidity, as sensor voltage is significantly affected by water vapor. Ideally, this calibration should be performed in dry air free from volatile compounds, although achieving such conditions can be challenging. Eugster and Kling (2012) proposed an alternative methodology that allows for calculating the relative sensor response $\left(\frac{R_s}{R_o}\right)$ without knowing the exact value of the resistance in the background atmospheric levels.  
+\
+
+$$\frac{R_s}{R_o} = \frac{\left(\frac{V_c}{V_L}- 1\right)}{\left(\frac{V_c}{V_0}-1\right)}$$
+
+<br>
+
+During the calibration of each sensor, we adopted the approach described in Bastviken et al. (2020). To calculate the relative sensor response $\frac{R_s}{R_o}$, we needed to determine Vo for each reference measurement (the baseline voltage for the given humidity level). Since humidity and voltage are highly linearly correlated, we used a linear model.  
+This step is performed with atmospheric methane concentrations (~2 ppm) under different humidity and temperature conditions. **We place the chambers in a cold room, which gradually decreases the temperature and humidity. This allows us to take measurements at various humidity levels, enabling us to establish a relationship between sensor voltage and humidity under baseline conditions.**  
+<br>
+
+
+$$V_o = g * H_2O_{ppm}+ P$$
+
+<br>
+**The calculated V_o is then used to determine the relative sensor response  ($\frac{R_s}{R_o}$) for each measurement. Using the formula below, the calibration parameters will be found through nonlinear least squares parameter estimation.**  
+<br>
+
+$$CH_4 = a* \left(\frac{R_s}{R_0}\right)^b + c* H_2O{ppm}*\left(\frac{R_s}{R_o}\right)^b + K$$
+<br>
+ where CH_4 is the reference measurement (in ppm), a,b,c,K are the fitted parameter estimates. Using these fitted parameters, we will convert milivolt to ppm afterwards.    
+
+<br>
+**Ideally, we should have 20-30 reference measurements ranging from 2 ppm to 200 ppm at different temperatures. We conduct this step in both a cold room and at room temperature, then check the calibration results.** If the results are not satisfactory, we add additional samples from different temperatures.  
+<br>
+
+
+## Calibration Data Processing
+
+#### Load necessary libraries
+
+```{r, message=FALSE, warning=FALSE}
+library(lubridate)
+library(tidyverse)
+library(zoo)
+```
+
+#### Function for reading all the files in SD_card folder
+
+```{r}
+
+
+SD_read <- function(path){
+  
+  dataset<- data.frame()
+  file_list <- list.files(path, full.names = TRUE)
+  for (file in file_list){
+    
+    # if the merged dataset doesn't exist, create it
+    if (!exists("dataset")){
+      dataset <- read.csv(file, header=FALSE)
+    }
+    
+    # if the merged dataset does exist, append to it
+    if (exists("dataset")){
+      temp_dataset <-read.csv(file, header=FALSE)
+      dataset<-rbind(dataset, temp_dataset)
+      rm(temp_dataset)
+    }
+  }
+  
+  dataset_sd <- dataset
+
+  return(dataset_sd)
+}
+
+
+```
+
+This section includes the functions will be used in calibration and following calculations. The script is adapted from Bastviken (2020)
+
+```{r}
+
+###### Calc Humidity - from Humidity_Conversion_Formulas_B210973EN-F by Vaisala / W. Wagner and A. Pruß:" The IAPWS Formulation 1995 for the Thermodynamic Properties of Ordinary Water Substance for General and Scientific Use ", Journal of Physical and Chemical Reference Data, June 2002 ,Volume 31, Issue 2, pp. 387535.
+
+calculate_H2Oppm <- function(data, Sensor_Temp_col, Humidity_col, Pressure_col){
+  A = 6.116441 # A, m, Tn aproximated empirical coefficients for calculating RH.
+  m = 7.591386
+  Tn = 240.7263
+  Pws <- A * 10**((m * data[[Sensor_Temp_col]]) / (data[[Sensor_Temp_col]] + Tn))
+  Pw <- data[[Humidity_col]] * Pws / 100
+  data$H2Oppm <- Pw * 10**6 / data[[Pressure_col]]
+  return(data)
+}
+
+
+#### Fitting Vo ~ Humidity
+
+nlr <- function(Xvar, g, P){
+  
+  return(g*Xvar + P)
+}
+
+
+# The function fits a model to estimate the parameter for Vo ~ Humidity, 
+# assuming that the air should have more or less stable CH4, and any differences in the voltage are 
+# attributed to humidity.
+
+fitVo <- function(data_air, ch4_mV, humidity){
+  
+  # Extract the methane voltage and humidity data from the input data frame
+  Vout <- data_air[,ch4_mV]
+  Xvar = data_air[,humidity]
+  
+  # Fit the model using the nls function and a nonlinear least squares regression method
+  # to estimate the parameters for Vo ~ Humidity
+  m <- nls(Vout ~ nlr(Xvar, g, P), start = list(g=1, P=1))
+  
+  # Plot the data and the model fit
+  plot(Xvar, Vout, col.lab = "darkgreen", col.axis = "darkgreen", xlab = "Humidity", ylab = "Vout")
+  lines(Xvar, predict(m))
+  
+  # Use the model fit to predict the methane voltage 
+  modVout <- predict(m)
+  
+  # Calculate the ratio of predicted and observed methane voltage
+  fCH4 <- modVout/Vout
+  
+  # Calculate the residuals between the predicted and observed methane voltage
+  res <- Vout - modVout
+  
+  # Calculate the root-mean-square error (RMSE) of the predicted methane voltage
+  VoRMSE <- sqrt(mean((Vout - modVout)^2))
+  
+  # Extract the estimated parameters for Vo ~ Humidity
+  gP <- coefficients(m)
+  
+  # Store the results in a list and give them descriptive names
+  Vo_results <- list(modVout, fCH4, res, VoRMSE, gP)
+  names(Vo_results) <- c("modVout", "fCH4", "res", "VoRMSE", "gP")
+  
+  # Return the results list
+  return(Vo_results)
+}
+
+
+
+#### calculate the relative sensor response R = Rs/Ro TO CH4
+
+#SENSOR corrections:
+#Based on product information informaion for NGM2611-E13 and TGS2611:
+#Vc = total circuit voltage = 5.0 ±0.2 V
+#VH = heater voltage (same as Vc)
+#Vout = V = measurement output voltage. Depend on Rs.
+#V0 = Vout at reference level of CH4, H2O and temperature (ideally zero gas influence and only related with RL)
+#RL = resistor in serie with sensor; can vary among sensors
+#Rs = resistance in sensor; affected by gas(es)
+#R0 = background reference resistance. Ideally same as RL, but in practice based on V0.
+#Rs/R0 related to CH4 conc.
+#Rs = ((Vc-V)/V)*RL = (Vc/V – 1)*RL
+#R0 = (Vc/V0 – 1)*RL
+#Rs/R0 = (Vc/V – 1) / (Vc/V0 – 1)
+
+# For each VL, use H2Oppm to derrive Vref=VL0 = VL at reference gas concentration from df_ghv. Then calculate Rs/R0 ratio
+
+
+calculate_Rs_Ro <- function(data, g, P, H2Oppm_col, CH4_1_col){
+  Vc=5000
+  # calculate Vok using humidity~ Vo relationship
+  data$Vok <- g * data[[H2Oppm_col]] + P
+  
+  # calculate Rs/Ro 
+  data$Rs_Ro <- (Vc / data[[CH4_1_col]] - 1) / (Vc / data$Vok - 1)
+  # return modified data frame
+  return(data)
+}
+
+
+###### USING ALL DATA for final curve fit equation...#######################
+
+# A function that defines the nonlinear function used in the calibration model
+func_CH4 <- function(xdata,a,b,c,K, R_column, H2Oppm){
+  return (a*(xdata[,R_column]**b) + c*(a*(xdata[,R_column]**b))*xdata[,H2Oppm] + K) 
+}
+
+
+# A function to calibrate CH4 using nonlinear regression and calculate error metrics.
+calibrate_CH4 <- function(Dfinal, initial_params, R_column, H2Oppm, CH4ppm)  {
+  
+  # Extracting predictor and response variables from the data
+  xdata = Dfinal[, c(R_column,H2Oppm)] 
+  ydata = Dfinal[, CH4ppm]
+  
+  # Fitting a nonlinear regression model to the data using starting parameter values and control parameters
+  # The nonlinear function used is func() with parameters a, b, c, K, R_column, and H2Oppm
+  rs_ch4_model <- nls(ydata~ func_CH4(xdata, a, b, c, K, R_column, H2Oppm), 
+                      start = initial_params, control = list(maxiter = 500)) 
+  
+  # Predicting CH4 concentrations using the fitted model
+  modCH4k <- predict(rs_ch4_model)  
+  Coeffs <- coefficients(rs_ch4_model)
+  
+  # Calculating the root mean squared error between predicted and actual CH4 concentrations
+  VoRMSE_CH4 <- sqrt(mean((ydata - modCH4k)^2))
+  
+  # Calculating R-squared between predicted and actual CH4 concentrations
+  R2 <-cor(modCH4k, ydata)^2
+  
+  # Storing the results in a list
+  results <- list(modCH4k= modCH4k, 
+                  Coeffs= Coeffs, VoRMSE_CH4= VoRMSE_CH4, R2 = R2 )
+  
+  # Setting up a two-panel plot for visualizing the calibration results
+  par(mfrow = c(1, 2))
+  
+  # Plotting measured CH4 concentrations against Rs/Ro ratios
+  plot(xdata[,R_column], 
+       ydata, xlab = "Rs/Ro", ylab = "CH4 (ppm)", pch=20, col="blue")
+  
+  # Plotting predicted CH4 concentrations against measured CH4 concentrations
+  plot(ydata, modCH4k, 
+       xlab = "CH4 (ppm) measured", ylab = "CH4 (ppm) predicted", pch=20, col="blue")
+  
+  # Adding a linear regression line to the second plot
+  abline(lm(modCH4k ~ ydata))
+  
+  # Returning the results
+  return(results)
+}
+```
+
+
+## Loading and Preparing LGR Reference Data
+
+To calibrate the Figaro methane sensor, we use reference data from the LGR instrument. The LGR provides high-frequency methane concentration measurements, but for calibration, we extract only the **stable peak concentrations** after each methane injection.
+
+Here, we load the LGR data from **two different days (May 16 and May 17)** and process it for further analysis. The important issue here is to check the time difference between LGR and low cost GHG system before matching the data.
+
+```{r}
+#setwd('set your working directory')
+
+# In this example we had calibration data from 2 different days.
+
+LGR_May_16<- read.csv("LGR_May_16.csv")
+
+LGR_May_17<- read.csv("LGR_May_17.csv")
+
+
+# We need to change the format of the datetime / Please check your datetime format. Because of different settings of computers and Microsoft office, you may need to use other functions like ymd_hms or dmy_hms...
+
+LGR_May_16$DateTime <- mdy_hms(LGR_May_16$DateTime)
+
+LGR_May_17$DateTime <- mdy_hms(LGR_May_17$DateTime)
+
+# Convert to unix time - somehow I had some problems when I work with datetime. It s always good to have numeric time format.
+LGR_May_16$Unix <- as.numeric(LGR_May_16$DateTime)
+LGR_May_17$Unix <- as.numeric(LGR_May_17$DateTime)
+
+
+# Correct for the time difference between the LGR and Figaro sensor
+# The real-time clock of the Arduino has a 53-second offset
+
+LGR_May_16$UnixCH<- LGR_May_16$Unix -53
+LGR_May_17$UnixCH<- LGR_May_17$Unix -53
+
+
+# Combine the data from both days into a single dataset
+
+LGR_May<- bind_rows(LGR_May_16, LGR_May_17)
+
+
+```
+
+
+
+## Loading and Preparing Low-cost Sensor Data
+
+
+```{r}
+
+
+# Loading all the calibration data in the folder. 
+AFC_data<- SD_read("AFC_data")
+
+# Since the data has no headings, we are naming the columns.
+colnames(AFC_data)<- c( "Stage","CH4_1", "CH4_2", "CO2", "Temp", "Humidity", "Extra", "Pressure", "Date")
+
+# We didnt have pressure measurements and we assume it as this.
+AFC_data$Pressure <- 1013
+
+# Convert DateTime to POSIX format for time-based operations
+# Check the format to ensure compatibility across systems
+AFC_data$Date<- dmy_hms(AFC_data$Date)
+
+
+# We are calculating absolute humidity (H2Oppm) using Temperature, Relative Humidity and Pressure
+AFC_data<- calculate_H2Oppm(data = AFC_data, 
+                     Sensor_Temp_col = "Temp", 
+                     Humidity_col = "Humidity", 
+                     Pressure_col = "Pressure")
+
+
+#Convert to unix time
+AFC_data$Unix <- as.numeric(AFC_data$Date)
+
+
+
+# Define a function to find the closest Unix time to match LGR data with low-cost system
+find_closest_time <- function(x, times) {
+  closest_time_index <- which.min(abs(times - x))
+  return(times[closest_time_index])
+}
+
+
+# Apply the function to each unix time value in df2
+AFC_data$closest_time <- apply(AFC_data["Unix"], 1, find_closest_time, times = LGR_May$UnixCH)
+
+
+# Merge the two data frames based on the closest unix time value
+AFC_data_ch_lgr <- merge(AFC_data, LGR_May, by.y = "UnixCH", by.x = "closest_time", all.y = TRUE)
+
+AFC_data_ch_lgr$diff <- AFC_data_ch_lgr$Unix.x- AFC_data_ch_lgr$closest_time
+
+
+# This difference threshold could change. In this data I found the right balance in 2.4 because the measurement interval is 2-3 seconds.
+AFC_data_ch_lgr<- AFC_data_ch_lgr %>%
+  mutate(LGR = ifelse((diff <= 2.4 & diff > 0), CH4_ppm, NA))
+
+
+# I just want to check how the data looks like
+plot(AFC_data_ch_lgr$CH4_1)
+```
+
+```{r}
+
+# We should extract the periods with baseline concentrations .- you can filter by time if you know the exact times, or you do it roughly by exploring the plot like what I did here
+
+AFC_data_base <- AFC_data_ch_lgr[c(15000:40000),]
+
+# We expect linear relationship betwewn CH4_1 and H2Oppm in baseline CH4 concentrations.
+plot(AFC_data_base$CH4_1)
+
+plot(AFC_data_base$H2Oppm)
+
+
+# Rolling mean to decrease the noise
+AFC_data_base$MedCH4 <- rollmean(AFC_data_base$CH4_1, k= 10, fill="extend")
+AFC_data_base$MedH2O <- rollmean(AFC_data_base$H2Oppm, k= 10, fill="extend")
+
+# Assign baseline measured values to a separate column
+AFC_data_base$LGR <- 2.05
+
+
+# In curve fitting, it will be nice to have extra samples from baseline. So I just did random sampling from the baseline measurement.
+AFC_data_ch_lgr_extra<- AFC_data_base%>%
+sample_n(6)
+
+```
+
+## Fitting Linear Model for estimating baseline voltage for different humidity levels which later will be used for calibration
+
+
+```{r}
+
+
+AFC_data_1_fitV0<- fitVo(AFC_data_base, "MedCH4", "MedH2O")
+
+# Extract the coefficients - which will be used later for voltage to ppm conversion
+g <- AFC_data_1_fitV0$gP['g']
+P <- AFC_data_1_fitV0$gP['P']
+
+# Remove the non-complete rows.
+complete_rows <- complete.cases(AFC_data_ch_lgr$LGR)
+
+
+#Index of the nonNA rows based on LGR results column
+non_na_rows <- which(complete_rows & !is.na(AFC_data_ch_lgr$LGR))
+
+
+AFC_data_ch_lgr$Date <- ymd_hms(AFC_data_ch_lgr$Date)
+
+AFC_data_ch_lgr$Date <- AFC_data_ch_lgr$Date
+med_ch4_values <- numeric()
+med_H2O_values <- numeric()
+
+# Instead of extracting one data point I used the average of last two minutes
+
+for (i in non_na_rows) {
+#  print(i)
+  x_datetime <- AFC_data_ch_lgr$Date[i]
+  x_datetime_range <- c(x_datetime - seconds(120), x_datetime)
+  med_ch4 <- AFC_data_ch_lgr %>%
+    filter(Date >= x_datetime_range[1] & Date <= x_datetime_range[2] & !is.na(CH4_1)) %>%
+    summarize(median(CH4_1, na.rm = TRUE))
+  med_ch4_values[i] <- med_ch4
+    med_H2O <- AFC_data_ch_lgr %>%
+    filter(Date >= x_datetime_range[1] & Date <= x_datetime_range[2] & !is.na(H2Oppm)) %>%
+    summarize(median(H2Oppm, na.rm = TRUE))
+    med_H2O_values[i] <- med_H2O
+  
+}
+med_ch4_values<- unlist(med_ch4_values)
+med_H2O_values<- unlist(med_H2O_values)
+
+# 4. Add the median CH4 values to the original data frame
+AFC_data_ch_lgr$MedCH4 <- NA
+AFC_data_ch_lgr$MedCH4[non_na_rows] <- med_ch4_values
+
+AFC_data_ch_lgr$MedH2O <- NA
+AFC_data_ch_lgr$MedH2O[non_na_rows] <- med_H2O_values
+
+# Subset the data frame based on the non-NA rows
+AFC_data_GHG_data_corrected <- AFC_data_ch_lgr[non_na_rows, ]
+
+
+
+# Add extra data from baseline concentrations
+AFC_data_GHG_data_corrected <- rbind(AFC_data_GHG_data_corrected, AFC_data_ch_lgr_extra)
+
+
+# Calculate relatıve sensor response
+AFC_data_GHG_data_corrected <- calculate_Rs_Ro(data = AFC_data_GHG_data_corrected,
+                                         g,
+                                          P,
+                                          H2Oppm_col = "MedH2O",
+                                          CH4_1_col= "MedCH4") 
+
+# We need to give initial parameters. If calibrate_CH4 does not converge, we have to play with the initial params or 
+initial_params <- list(a= -1 , b=-3 , c= 0.0001 , K=1)
+
+
+
+# Remove some of the unstable observations during calibration
+
+# AFC_data_GHG_data_corrected<- AFC_data_GHG_data_corrected[c(-24:-26),]
+
+
+calibrated_AFC_data<- calibrate_CH4(AFC_data_GHG_data_corrected, initial_params, "Rs_Ro", "MedH2O", "LGR")
+
+
+
+# plot(AFC_data_GHG_data_corrected$Rs_Ro, AFC_data_GHG_data_corrected$CH4_ppm)
+
+
+# Print the calibration coefficients - we will use them later
+print(paste('g:', g))
+print(paste('P:', P))
+# the order is a,b,c,K
+print(paste(calibrated_AFC_data$Coeffs))
+
+```
+
+
+

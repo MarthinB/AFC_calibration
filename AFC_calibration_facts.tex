@@ -1,0 +1,386 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Figaro Methane Sensor Calibration},
+  pdfauthor={Tuba Bucak Onay},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Figaro Methane Sensor Calibration}
+\author{Tuba Bucak Onay}
+\date{2025-02-11}
+
+\begin{document}
+\maketitle
+
+\hypertarget{ch4-sensor-calibration-facts}{%
+\subsection{CH4 sensor calibration
+Facts}\label{ch4-sensor-calibration-facts}}
+
+TGS sensor operates on the principle of chemical adsorption and
+desorption of gases on sensor's surface. Some gases- for example water
+vapor- can interfere voltage measurements by causing a decrease in
+resistance of the sensor as the water vapor is adsorbed on the sensor
+surface which requires the calibration necessary.
+
+Based on the sensor's circuit diagram, the sensing area is connected in
+series with the reference resistor (RL). The circuit voltage (RL) is 5V,
+which is distributed across both the sensing area and the reference
+resistor. However, the voltage across the reference resistor changes
+with the concentration of gas. When the target gas is detected, the
+resistance of the sensing area drops, causing the measured voltage (VL)
+to rise.
+
+\[R_s = \left(\frac{V_c}{V_L} - 1\right)\]
+
+Since the surface characteristics and resistance of individual sensors
+vary, each sensor requires calibration. This calibration must also
+consider temperature and humidity, as sensor voltage is significantly
+affected by water vapor. Ideally, this calibration should be performed
+in dry air free from volatile compounds, although achieving such
+conditions can be challenging. Eugster and Kling (2012) proposed an
+alternative methodology that allows for calculating the relative sensor
+response \(\left(\frac{R_s}{R_o}\right)\) without knowing the exact
+value of the resistance in the background atmospheric levels.\\
+\strut \\
+
+\[\frac{R_s}{R_o} = \frac{\left(\frac{V_c}{V_L}- 1\right)}{\left(\frac{V_c}{V_0}-1\right)}\]
+
+During the calibration of each sensor, we adopted the approach described
+in Bastviken et al.~(2020). To calculate the relative sensor response
+\(\frac{R_s}{R_o}\), we needed to determine Vo for each reference
+measurement (the baseline voltage for the given humidity level). Since
+humidity and voltage are highly linearly correlated, we used a linear
+model.\\
+This step is performed with atmospheric methane concentrations
+(\textasciitilde2 ppm) under different humidity and temperature
+conditions. \textbf{We place the chambers in a cold room, which
+gradually decreases the temperature and humidity. This allows us to take
+measurements at various humidity levels, enabling us to establish a
+relationship between sensor voltage and humidity under baseline
+conditions.}\\
+
+\[V_o = g * H_2O_{ppm}+ P\]
+
+\textbf{The calculated V\_o is then used to determine the relative
+sensor response (\(\frac{R_s}{R_o}\)) for each measurement. Using the
+formula below, the calibration parameters will be found through
+nonlinear least squares parameter estimation.}\\
+
+\[CH_4 = a* \left(\frac{R_s}{R_0}\right)^b + c* H_2O{ppm}*\left(\frac{R_s}{R_o}\right)^b + K\]
+where CH\_4 is the reference measurement (in ppm), a,b,c,K are the
+fitted parameter estimates. Using these fitted parameters, we will
+convert milivolt to ppm afterwards.
+
+\textbf{Ideally, we should have 20-30 reference measurements ranging
+from 2 ppm to 200 ppm at different temperatures. We conduct this step in
+both a cold room and at room temperature, then check the calibration
+results.} If the results are not satisfactory, we add additional samples
+from different temperatures.\\
+
+\hypertarget{calibration-data-processing}{%
+\subsection{Calibration Data
+Processing}\label{calibration-data-processing}}
+
+\hypertarget{load-necessary-libraries}{%
+\paragraph{Load necessary libraries}\label{load-necessary-libraries}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(lubridate)}
+\FunctionTok{library}\NormalTok{(tidyverse)}
+\FunctionTok{library}\NormalTok{(zoo)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{function-for-reading-all-the-files-in-sd_card-folder}{%
+\paragraph{Function for reading all the files in SD\_card
+folder}\label{function-for-reading-all-the-files-in-sd_card-folder}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{SD\_read }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(path)\{}
+  
+\NormalTok{  dataset}\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{()}
+\NormalTok{  file\_list }\OtherTok{\textless{}{-}} \FunctionTok{list.files}\NormalTok{(path, }\AttributeTok{full.names =} \ConstantTok{TRUE}\NormalTok{)}
+  \ControlFlowTok{for}\NormalTok{ (file }\ControlFlowTok{in}\NormalTok{ file\_list)\{}
+    
+    \CommentTok{\# if the merged dataset doesn\textquotesingle{}t exist, create it}
+    \ControlFlowTok{if}\NormalTok{ (}\SpecialCharTok{!}\FunctionTok{exists}\NormalTok{(}\StringTok{"dataset"}\NormalTok{))\{}
+\NormalTok{      dataset }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(file, }\AttributeTok{header=}\ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{    \}}
+    
+    \CommentTok{\# if the merged dataset does exist, append to it}
+    \ControlFlowTok{if}\NormalTok{ (}\FunctionTok{exists}\NormalTok{(}\StringTok{"dataset"}\NormalTok{))\{}
+\NormalTok{      temp\_dataset }\OtherTok{\textless{}{-}}\FunctionTok{read.csv}\NormalTok{(file, }\AttributeTok{header=}\ConstantTok{FALSE}\NormalTok{)}
+\NormalTok{      dataset}\OtherTok{\textless{}{-}}\FunctionTok{rbind}\NormalTok{(dataset, temp\_dataset)}
+      \FunctionTok{rm}\NormalTok{(temp\_dataset)}
+\NormalTok{    \}}
+\NormalTok{  \}}
+  
+\NormalTok{  dataset\_sd }\OtherTok{\textless{}{-}}\NormalTok{ dataset}
+
+  \FunctionTok{return}\NormalTok{(dataset\_sd)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{this-section-includes-the-functions-will-be-used-in-calibration-and-following-calculations.-the-script-is-adapted-from-bastviken-2020}{%
+\subsection{This section includes the functions will be used in
+calibration and following calculations. The script is adapted from
+Bastviken
+(2020)}\label{this-section-includes-the-functions-will-be-used-in-calibration-and-following-calculations.-the-script-is-adapted-from-bastviken-2020}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\DocumentationTok{\#\#\#\#\#\# Calc Humidity {-} from Humidity\_Conversion\_Formulas\_B210973EN{-}F by Vaisala / W. Wagner and A. Pruß:" The IAPWS Formulation 1995 for the Thermodynamic Properties of Ordinary Water Substance for General and Scientific Use ", Journal of Physical and Chemical Reference Data, June 2002 ,Volume 31, Issue 2, pp. 387535.}
+
+\NormalTok{calculate\_H2Oppm }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(data,Sensor\_Temp\_col, Humidity\_col, Pressure\_col)\{}
+\NormalTok{  A }\OtherTok{=} \FloatTok{6.116441} \CommentTok{\# A, m, Tn aproximated empirical coefficients for calculating RH.}
+\NormalTok{  m }\OtherTok{=} \FloatTok{7.591386}
+\NormalTok{  Tn }\OtherTok{=} \FloatTok{240.7263}
+\NormalTok{  Pws }\OtherTok{\textless{}{-}}\NormalTok{ A }\SpecialCharTok{*} \DecValTok{10}\SpecialCharTok{**}\NormalTok{((m }\SpecialCharTok{*}\NormalTok{ data[[Sensor\_Temp\_col]]) }\SpecialCharTok{/}\NormalTok{ (data[[Sensor\_Temp\_col]] }\SpecialCharTok{+}\NormalTok{ Tn))}
+\NormalTok{  Pw }\OtherTok{\textless{}{-}}\NormalTok{ data[[Humidity\_col]] }\SpecialCharTok{*}\NormalTok{ Pws }\SpecialCharTok{/} \DecValTok{100}
+\NormalTok{  data}\SpecialCharTok{$}\NormalTok{H2Oppm }\OtherTok{\textless{}{-}}\NormalTok{ Pw }\SpecialCharTok{*} \DecValTok{10}\SpecialCharTok{**}\DecValTok{6} \SpecialCharTok{/}\NormalTok{ data[[Pressure\_col]]}
+  \FunctionTok{return}\NormalTok{(data)}
+\NormalTok{\}}
+
+
+\DocumentationTok{\#\#\#\# Fitting Vo \textasciitilde{} Humidity}
+
+\NormalTok{nlr }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(Xvar, g, P)\{}
+  
+  \FunctionTok{return}\NormalTok{(g}\SpecialCharTok{*}\NormalTok{Xvar }\SpecialCharTok{+}\NormalTok{ P)}
+\NormalTok{\}}
+
+
+\CommentTok{\# The function fits a model to estimate the parameter for Vo \textasciitilde{} Humidity, }
+\CommentTok{\# assuming that the air should have more or less stable CH4, and any differences in the voltage are }
+\CommentTok{\# attributed to humidity.}
+
+\NormalTok{fitVo }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(data\_air, ch4\_mV, humidity)\{}
+  
+  \CommentTok{\# Extract the methane voltage and humidity data from the input data frame}
+\NormalTok{  Vout }\OtherTok{\textless{}{-}}\NormalTok{ data\_air[,ch4\_mV]}
+\NormalTok{  Xvar }\OtherTok{=}\NormalTok{ data\_air[,humidity]}
+  
+  \CommentTok{\# Fit the model using the nls function and a nonlinear least squares regression method}
+  \CommentTok{\# to estimate the parameters for Vo \textasciitilde{} Humidity}
+\NormalTok{  m }\OtherTok{\textless{}{-}} \FunctionTok{nls}\NormalTok{(Vout }\SpecialCharTok{\textasciitilde{}} \FunctionTok{nlr}\NormalTok{(Xvar, g, P), }\AttributeTok{start =} \FunctionTok{list}\NormalTok{(}\AttributeTok{g=}\DecValTok{1}\NormalTok{, }\AttributeTok{P=}\DecValTok{1}\NormalTok{))}
+  
+  \CommentTok{\# Plot the data and the model fit}
+  \FunctionTok{plot}\NormalTok{(Xvar, Vout, }\AttributeTok{col.lab =} \StringTok{"darkgreen"}\NormalTok{, }\AttributeTok{col.axis =} \StringTok{"darkgreen"}\NormalTok{, }\AttributeTok{xlab =} \StringTok{"Humidity"}\NormalTok{, }\AttributeTok{ylab =} \StringTok{"Vout"}\NormalTok{)}
+  \FunctionTok{lines}\NormalTok{(Xvar, }\FunctionTok{predict}\NormalTok{(m))}
+  
+  \CommentTok{\# Use the model fit to predict the methane voltage }
+\NormalTok{  modVout }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(m)}
+  
+  \CommentTok{\# Calculate the ratio of predicted and observed methane voltage}
+\NormalTok{  fCH4 }\OtherTok{\textless{}{-}}\NormalTok{ modVout}\SpecialCharTok{/}\NormalTok{Vout}
+  
+  \CommentTok{\# Calculate the residuals between the predicted and observed methane voltage}
+\NormalTok{  res }\OtherTok{\textless{}{-}}\NormalTok{ Vout }\SpecialCharTok{{-}}\NormalTok{ modVout}
+  
+  \CommentTok{\# Calculate the root{-}mean{-}square error (RMSE) of the predicted methane voltage}
+\NormalTok{  VoRMSE }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{mean}\NormalTok{((Vout }\SpecialCharTok{{-}}\NormalTok{ modVout)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{))}
+  
+  \CommentTok{\# Extract the estimated parameters for Vo \textasciitilde{} Humidity}
+\NormalTok{  gP }\OtherTok{\textless{}{-}} \FunctionTok{coefficients}\NormalTok{(m)}
+  
+  \CommentTok{\# Store the results in a list and give them descriptive names}
+\NormalTok{  Vo\_results }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(modVout, fCH4, res, VoRMSE, gP)}
+  \FunctionTok{names}\NormalTok{(Vo\_results) }\OtherTok{\textless{}{-}} \FunctionTok{c}\NormalTok{(}\StringTok{"modVout"}\NormalTok{, }\StringTok{"fCH4"}\NormalTok{, }\StringTok{"res"}\NormalTok{, }\StringTok{"VoRMSE"}\NormalTok{, }\StringTok{"gP"}\NormalTok{)}
+  
+  \CommentTok{\# Return the results list}
+  \FunctionTok{return}\NormalTok{(Vo\_results)}
+\NormalTok{\}}
+
+
+
+\DocumentationTok{\#\#\#\# calculate the relative sensor response R = Rs/Ro TO CH4}
+
+\CommentTok{\#SENSOR corrections:}
+\CommentTok{\#Based on product information informaion for NGM2611{-}E13 and TGS2611:}
+\CommentTok{\#Vc = total circuit voltage = 5.0 ±0.2 V}
+\CommentTok{\#VH = heater voltage (same as Vc)}
+\CommentTok{\#Vout = V = measurement output voltage. Depend on Rs.}
+\CommentTok{\#V0 = Vout at reference level of CH4, H2O and temperature (ideally zero gas influence and only related with RL)}
+\CommentTok{\#RL = resistor in serie with sensor; can vary among sensors}
+\CommentTok{\#Rs = resistance in sensor; affected by gas(es)}
+\CommentTok{\#R0 = background reference resistance. Ideally same as RL, but in practice based on V0.}
+\CommentTok{\#Rs/R0 related to CH4 conc.}
+\CommentTok{\#Rs = ((Vc{-}V)/V)*RL = (Vc/V – 1)*RL}
+\CommentTok{\#R0 = (Vc/V0 – 1)*RL}
+\CommentTok{\#Rs/R0 = (Vc/V – 1) / (Vc/V0 – 1)}
+
+\CommentTok{\# For each VL, use H2Oppm to derrive Vref=VL0 = VL at reference gas concentration from df\_ghv. Then calculate Rs/R0 ratio}
+
+
+\NormalTok{calculate\_Rs\_Ro }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(data, g, P, H2Oppm\_col, CH4\_1\_col)\{}
+\NormalTok{  Vc}\OtherTok{=}\DecValTok{5000}
+  \CommentTok{\# calculate Vok using humidity\textasciitilde{} Vo relationship}
+\NormalTok{  data}\SpecialCharTok{$}\NormalTok{Vok }\OtherTok{\textless{}{-}}\NormalTok{ g }\SpecialCharTok{*}\NormalTok{ data[[H2Oppm\_col]] }\SpecialCharTok{+}\NormalTok{ P}
+  
+  \CommentTok{\# calculate Rs/Ro }
+\NormalTok{  data}\SpecialCharTok{$}\NormalTok{Rs\_Ro }\OtherTok{\textless{}{-}}\NormalTok{ (Vc }\SpecialCharTok{/}\NormalTok{ data[[CH4\_1\_col]] }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{) }\SpecialCharTok{/}\NormalTok{ (Vc }\SpecialCharTok{/}\NormalTok{ data}\SpecialCharTok{$}\NormalTok{Vok }\SpecialCharTok{{-}} \DecValTok{1}\NormalTok{)}
+  \CommentTok{\# return modified data frame}
+  \FunctionTok{return}\NormalTok{(data)}
+\NormalTok{\}}
+
+
+\DocumentationTok{\#\#\#\#\#\# USING ALL DATA for final curve fit equation...\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#\#}
+
+\CommentTok{\# A function that defines the nonlinear function used in the calibration model}
+\NormalTok{func\_CH4 }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(xdata,a,b,c,K, R\_column, H2Oppm)\{}
+  \FunctionTok{return}\NormalTok{ (a}\SpecialCharTok{*}\NormalTok{(xdata[,R\_column]}\SpecialCharTok{**}\NormalTok{b) }\SpecialCharTok{+}\NormalTok{ c}\SpecialCharTok{*}\NormalTok{(a}\SpecialCharTok{*}\NormalTok{(xdata[,R\_column]}\SpecialCharTok{**}\NormalTok{b))}\SpecialCharTok{*}\NormalTok{xdata[,H2Oppm] }\SpecialCharTok{+}\NormalTok{ K) }
+\NormalTok{\}}
+
+
+\CommentTok{\# A function to calibrate CH4 using nonlinear regression and calculate error metrics.}
+\NormalTok{calibrate\_CH4 }\OtherTok{\textless{}{-}} \ControlFlowTok{function}\NormalTok{(Dfinal, initial\_params, R\_column, H2Oppm, CH4ppm)  \{}
+  
+  \CommentTok{\# Extracting predictor and response variables from the data}
+\NormalTok{  xdata }\OtherTok{=}\NormalTok{ Dfinal[, }\FunctionTok{c}\NormalTok{(R\_column,H2Oppm)] }
+\NormalTok{  ydata }\OtherTok{=}\NormalTok{ Dfinal[, CH4ppm]}
+  
+  \CommentTok{\# Fitting a nonlinear regression model to the data using starting parameter values and control parameters}
+  \CommentTok{\# The nonlinear function used is func() with parameters a, b, c, K, R\_column, and H2Oppm}
+\NormalTok{  rs\_ch4\_model }\OtherTok{\textless{}{-}} \FunctionTok{nls}\NormalTok{(ydata}\SpecialCharTok{\textasciitilde{}} \FunctionTok{func\_CH4}\NormalTok{(xdata, a, b, c, K, R\_column, H2Oppm), }
+                      \AttributeTok{start =}\NormalTok{ initial\_params, }\AttributeTok{control =} \FunctionTok{list}\NormalTok{(}\AttributeTok{maxiter =} \DecValTok{500}\NormalTok{)) }
+  
+  \CommentTok{\# Predicting CH4 concentrations using the fitted model}
+\NormalTok{  modCH4k }\OtherTok{\textless{}{-}} \FunctionTok{predict}\NormalTok{(rs\_ch4\_model)  }
+\NormalTok{  Coeffs }\OtherTok{\textless{}{-}} \FunctionTok{coefficients}\NormalTok{(rs\_ch4\_model)}
+  
+  \CommentTok{\# Calculating the root mean squared error between predicted and actual CH4 concentrations}
+\NormalTok{  VoRMSE\_CH4 }\OtherTok{\textless{}{-}} \FunctionTok{sqrt}\NormalTok{(}\FunctionTok{mean}\NormalTok{((ydata }\SpecialCharTok{{-}}\NormalTok{ modCH4k)}\SpecialCharTok{\^{}}\DecValTok{2}\NormalTok{))}
+  
+  \CommentTok{\# Calculating R{-}squared between predicted and actual CH4 concentrations}
+\NormalTok{  R2 }\OtherTok{\textless{}{-}}\FunctionTok{cor}\NormalTok{(modCH4k, ydata)}\SpecialCharTok{\^{}}\DecValTok{2}
+  
+  \CommentTok{\# Storing the results in a list}
+\NormalTok{  results }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{(}\AttributeTok{modCH4k=}\NormalTok{ modCH4k, }
+                  \AttributeTok{Coeffs=}\NormalTok{ Coeffs, }\AttributeTok{VoRMSE\_CH4=}\NormalTok{ VoRMSE\_CH4, }\AttributeTok{R2 =}\NormalTok{ R2 )}
+  
+  \CommentTok{\# Setting up a two{-}panel plot for visualizing the calibration results}
+  \FunctionTok{par}\NormalTok{(}\AttributeTok{mfrow =} \FunctionTok{c}\NormalTok{(}\DecValTok{1}\NormalTok{, }\DecValTok{2}\NormalTok{))}
+  
+  \CommentTok{\# Plotting measured CH4 concentrations against Rs/Ro ratios}
+  \FunctionTok{plot}\NormalTok{(xdata[,R\_column], }
+\NormalTok{       ydata, }\AttributeTok{xlab =} \StringTok{"Rs/Ro"}\NormalTok{, }\AttributeTok{ylab =} \StringTok{"CH4 (ppm)"}\NormalTok{, }\AttributeTok{pch=}\DecValTok{20}\NormalTok{, }\AttributeTok{col=}\StringTok{"blue"}\NormalTok{)}
+  
+  \CommentTok{\# Plotting predicted CH4 concentrations against measured CH4 concentrations}
+  \FunctionTok{plot}\NormalTok{(ydata, modCH4k, }
+       \AttributeTok{xlab =} \StringTok{"CH4 (ppm) measured"}\NormalTok{, }\AttributeTok{ylab =} \StringTok{"CH4 (ppm) predicted"}\NormalTok{, }\AttributeTok{pch=}\DecValTok{20}\NormalTok{, }\AttributeTok{col=}\StringTok{"blue"}\NormalTok{)}
+  
+  \CommentTok{\# Adding a linear regression line to the second plot}
+  \FunctionTok{abline}\NormalTok{(}\FunctionTok{lm}\NormalTok{(modCH4k }\SpecialCharTok{\textasciitilde{}}\NormalTok{ ydata))}
+  
+  \CommentTok{\# Returning the results}
+  \FunctionTok{return}\NormalTok{(results)}
+\NormalTok{\}}
+\end{Highlighting}
+\end{Shaded}
+
+
+\end{document}

@@ -1,0 +1,168 @@
+---
+title: "Convert to ppm"
+author: "TBO"
+date: "2025-02-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r, message=FALSE, echo=FALSE, warning=FALSE}
+##### Required packages - load dplyr first/then plyr for preventing conflict between packages
+library(lubridate)
+library(tidyverse)
+library(dplyr)
+library(plyr)
+library(zoo)
+
+
+```
+
+## This section includes the functions will be used in calibration and following calculations
+
+
+```{r}
+# Function for reading all the files in SD_card folder
+
+SD_read <- function(path){
+  
+  dataset<- data.frame()
+  file_list <- list.files(path, full.names = TRUE)
+  for (file in file_list){
+    
+    # if the merged dataset doesn't exist, create it
+    if (!exists("dataset")){
+      dataset <- read.csv(file, header=FALSE)
+    }
+    
+    # if the merged dataset does exist, append to it
+    if (exists("dataset")){
+      temp_dataset <-read.csv(file, header=FALSE)
+      dataset<-rbind(dataset, temp_dataset)
+      rm(temp_dataset)
+    }
+  }
+  
+  dataset_sd <- dataset
+
+  return(dataset_sd)
+}
+
+
+
+
+###### Calc Humidity - from Humidity_Conversion_Formulas_B210973EN-F by Vaisala / W. Wagner and A. Pruß:" The IAPWS Formulation 1995 for the Thermodynamic Properties of Ordinary Water Substance for General and Scientific Use ", Journal of Physical and Chemical Reference Data, June 2002 ,Volume 31, Issue 2, pp. 387535.
+
+calculate_H2Oppm <- function(data,Sensor_Temp_col, Humidity_col, Pressure_col){
+  A = 6.116441 # A, m, Tn aproximated empirical coefficients for calculating RH.
+  m = 7.591386
+  Tn = 240.7263
+  Pws <- A * 10**((m * data[[Sensor_Temp_col]]) / (data[[Sensor_Temp_col]] + Tn))
+  Pw <- data[[Humidity_col]] * Pws / 100
+  data$H2Oppm <- Pw * 10**6 / data[[Pressure_col]]
+  return(data)
+}
+
+#### calculate the relative sensor response R = Rs/Ro TO CH4
+
+#SENSOR corrections:
+#Based on product information informaion for NGM2611-E13 and TGS2611:
+#Vc = total circuit voltage = 5.0 ±0.2 V
+#VH = heater voltage (same as Vc)
+#Vout = V = measurement output voltage. Depend on Rs.
+#V0 = Vout at reference level of CH4, H2O and temperature (ideally zero gas influence and only related with RL)
+#RL = resistor in serie with sensor; can vary among sensors
+#Rs = resistance in sensor; affected by gas(es)
+#R0 = background reference resistance. Ideally same as RL, but in practice based on V0.
+#Rs/R0 related to CH4 conc.
+#Rs = ((Vc-V)/V)*RL = (Vc/V – 1)*RL
+#R0 = (Vc/V0 – 1)*RL
+#Rs/R0 = (Vc/V – 1) / (Vc/V0 – 1)
+
+# For each VL, use H2Oppm to derrive Vref=VL0 = VL at reference gas concentration from df_ghv. Then calculate Rs/R0 ratio
+
+
+calculate_Rs_Ro <- function(data, g, P, H2Oppm_col, CH4_1_col){
+  Vc=5000
+  # calculate Vok using humidity~ Vo relationship
+  data$Vok <- g * data[[H2Oppm_col]] + P
+  
+  # calculate Rs/Ro 
+  data$Rs_Ro <- (Vc / data[[CH4_1_col]] - 1) / (Vc / data$Vok - 1)
+  # return modified data frame
+  return(data)
+}
+
+
+###### USING ALL DATA for final curve fit equation...#######################
+
+# A function that defines the nonlinear function used in the calibration model
+func_CH4 <- function(xdata,a,b,c,K, R_column, H2Oppm){
+  return (a*(xdata[,R_column]**b) + c*(a*(xdata[,R_column]**b))*xdata[,H2Oppm] + K) 
+}
+
+
+# Calculate CH4_ppm (methane in parts per million) from CH4_mvolt (methane in millivolts) and parameters g, P, a, b, c, K
+
+
+# Ensure that the first column of your dataset contains the CH4 values in millivolts.
+
+# Before calculating CH4_ppm, calculate H2Oppm (water vapor in parts per million) using pressure values from field data. 
+# You can add a pressure column to your dataset before performing this analysis. If you did not measure pressure, use the closest meteorological station data for the sampling day.
+
+
+```
+
+# This section includes the calibration parameters for sensors and application of conversion formulas
+
+```{r}
+
+
+# These are the fitted example paramteres : PLEASE UPDATE THIS FOR YOUR SENSOR!!!
+# Defining parameters from your calibration curve
+g<- 0.006221
+P<- 119.8262
+a<- -0.90352
+b<- -3.58194
+c<- -0.00015
+K<- -2.20552
+
+
+
+Your_dataset_DE1<- SD_read("pathto your folder")
+
+
+colnames(Your_dataset_DE1)<- c( "Stage","CH4_1", "CH4_2", "CO2", "Temp", "Humidity", "Extra", "Pressure", "Date")
+
+
+
+
+# First you need to upload yor dataset. Lets assume the name of the dataset is :  Your_dataset_DE1
+
+# Calculating H2Oppm using field data and storing the result in Your_dataset_DE1
+Your_dataset_DE1 <- calculate_H2Oppm(data = Your_dataset_DE1,
+                                 Sensor_Temp_col = "Temp",
+                                 Humidity_col = "Humidity",
+                                 Pressure_col = "Pressure")
+
+# Calculating the relative sensor response (Rs/Ro) using the calculate_Rs_Ro function with parameters g and P.
+# Adjust the column names H2Oppm and CH4_1 as per your dataset's column names.
+# In the raw sensor data there are two columns related with methane. They are linearly correlated. We use the columns having lower values. Possibly it is the first column in your data. But if you have doubts, please contact us.
+
+Your_dataset_DE1_ppm <- calculate_Rs_Ro(data = Your_dataset_DE1,
+                                    g,
+                                    P,
+                                    H2Oppm_col = "H2Oppm",
+                                    CH4_col = "CH4_1")
+
+# Fitting a curve to all data points using the func_CH4 function. 
+# This step calculates CH4_ppm based on the curve fit equation.
+
+Your_dataset_DE1_ppm <- Your_dataset_DE1_ppm %>%
+  mutate(CH4_ppm = func_CH4(Your_dataset_DE1_ppm, a, b, c, K, "Rs_Ro", "H2Oppm"))
+
+```
+
+
+
