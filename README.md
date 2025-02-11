@@ -13,7 +13,7 @@ LGR_May_16.csv & LGR_May_17.csv – High-precision methane reference measurement
 These datasets (already pre-processed) contain stable peak concentrations extracted after each methane injection.
 
 ### Sensor Data:
-AFC_data – Raw data from the Figaro sensor, including CH₄ and CO₂ readings recorded during the calibration process.
+AFC_data - Raw data from the Figaro sensor, including CH₄ and CO₂ readings recorded during the calibration process.
 
 
 ### Peak_detection_app:
