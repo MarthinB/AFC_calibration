@@ -14,7 +14,6 @@ These datasets (already pre-processed) contain stable peak concentrations extrac
 ### Sensor Data:
 AFC_data - Raw data from the Figaro sensor, including CH₄ and CO₂ readings recorded during the calibration process.
 
-
 ### Peak_detection_app:
 Shiny app for detecting peaks from raw LGR data
 
@@ -23,3 +22,6 @@ Example raw LGR data
 
 ### Sensors_convert_to_ppm:
 Script to convert voltage to ppm using calibration coefficients
+
+### AFC_data_explore_app.R
+Shiny app to explore raw data
